@@ -42,4 +42,4 @@ npm run check:all
 
 [`public/data/knowledge-35000-v1/`](public/data/knowledge-35000-v1/) is the only persistent question source. The app and tests read its manifest and shards directly; no editable JSONL or development-bank copy is retained.
 
-See [`docs/question-bank.md`](docs/question-bank.md) for the format and future expansion rule.
+See the [product specification](docs/product-spec.md#数据模型与静态发布) for the format and future expansion rule.

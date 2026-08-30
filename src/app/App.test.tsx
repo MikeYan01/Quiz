@@ -202,7 +202,7 @@ describe("knowledge challenge", () => {
     expect(screen.getByText("本题得分：0")).toBeVisible();
   });
 
-  it("pauses and covers the question while the page is hidden", async () => {
+  it("keeps the question timer running while the page is hidden", async () => {
     vi.useFakeTimers();
     let visibilityState: DocumentVisibilityState = "visible";
     vi.spyOn(document, "visibilityState", "get").mockImplementation(
@@ -223,29 +223,32 @@ describe("knowledge challenge", () => {
     act(() => {
       document.dispatchEvent(new Event("visibilitychange"));
     });
-    expect(screen.getByText("挑战已暂停")).toBeVisible();
+    expect(screen.getByText(questionAt(0).prompt)).toBeVisible();
     expect(
-      screen.queryByText(questionAt(0).prompt),
+      screen.queryByText("挑战已暂停"),
     ).not.toBeInTheDocument();
 
     act(() => {
-      vi.advanceTimersByTime(5_000);
+      vi.advanceTimersByTime(14_000);
     });
-    visibilityState = "visible";
-    fireEvent.click(screen.getByRole("button", { name: "继续挑战" }));
-    expect(screen.getByLabelText("剩余时间")).toHaveTextContent("14.0");
+    expect(
+      screen.getByRole("button", {
+        name: `${correctAnswerAt(0).text} ✓`,
+      }),
+    ).toBeVisible();
+    expect(screen.getByText("本题得分：0")).toBeVisible();
 
+    visibilityState = "visible";
     act(() => {
-      vi.advanceTimersByTime(100);
+      document.dispatchEvent(new Event("visibilitychange"));
     });
-    expect(screen.getByLabelText("剩余时间")).toHaveTextContent("13.9");
+    expect(
+      screen.queryByText("挑战已暂停"),
+    ).not.toBeInTheDocument();
   });
 
-  it("does not start a loaded challenge while the page is hidden", async () => {
-    let visibilityState: DocumentVisibilityState = "visible";
-    vi.spyOn(document, "visibilityState", "get").mockImplementation(
-      () => visibilityState,
-    );
+  it("starts a loaded challenge even if the page becomes hidden", async () => {
+    vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
     let resolveChallenge:
       | ((challenge: ReturnType<typeof preparedChallenge>) => void)
       | undefined;
@@ -257,7 +260,6 @@ describe("knowledge challenge", () => {
 
     render(<App prepareChallenge={() => pendingChallenge} />);
     fireEvent.click(screen.getByRole("button", { name: "开始挑战" }));
-    visibilityState = "hidden";
     act(() => {
       document.dispatchEvent(new Event("visibilitychange"));
     });
@@ -266,10 +268,8 @@ describe("knowledge challenge", () => {
       await pendingChallenge;
     });
 
-    expect(screen.getByText("挑战已暂停")).toBeVisible();
-    expect(
-      screen.queryByText(questionAt(0).prompt),
-    ).not.toBeInTheDocument();
+    expect(screen.getByText(questionAt(0).prompt)).toBeVisible();
+    expect(screen.getByText("第 1 / 10 题")).toBeVisible();
   });
 
   it("copies issue details and pauses feedback until the player continues", async () => {

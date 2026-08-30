@@ -141,7 +141,6 @@ export function App({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
-  const [paused, setPaused] = useState(false);
   const [reportingIssue, setReportingIssue] = useState(false);
   const [reportStatus, setReportStatus] = useState<string | null>(null);
   const [manualReport, setManualReport] = useState<string | null>(null);
@@ -154,10 +153,9 @@ export function App({
   const [reviewCopyState, setReviewCopyState] =
     useState<ReviewCopyState | null>(null);
   const segmentStartedAt = useRef(0);
-  const segmentRemainingMs = useRef(questionDurationMs);
 
   useLayoutEffect(() => {
-    if (!challenge || feedback || paused) {
+    if (!challenge || feedback) {
       return;
     }
     if (questionIndex === challenge.questions.length) {
@@ -180,13 +178,10 @@ export function App({
       return;
     }
     segmentStartedAt.current = performance.now();
-    segmentRemainingMs.current = remainingMs;
 
     const updateCountdown = () => {
       const elapsedMs = performance.now() - segmentStartedAt.current;
-      setRemainingMs(
-        Math.max(0, segmentRemainingMs.current - elapsedMs),
-      );
+      setRemainingMs(Math.max(0, questionDurationMs - elapsedMs));
     };
     const interval = window.setInterval(updateCountdown, 50);
     const timeout = window.setTimeout(() => {
@@ -198,16 +193,16 @@ export function App({
       setRemainingMs(0);
       setChallengeResults((current) => [...current, result]);
       setFeedback(result);
-    }, segmentRemainingMs.current);
+    }, questionDurationMs);
 
     return () => {
       window.clearInterval(interval);
       window.clearTimeout(timeout);
     };
-  }, [challenge, feedback, paused, questionIndex]);
+  }, [challenge, feedback, questionIndex]);
 
   useEffect(() => {
-    if (!challenge || !feedback || paused || reportingIssue) {
+    if (!challenge || !feedback || reportingIssue) {
       return;
     }
 
@@ -220,28 +215,7 @@ export function App({
     return () => {
       window.clearTimeout(timer);
     };
-  }, [challenge, feedback, paused, reportingIssue]);
-
-  useEffect(() => {
-    function pauseWhenHidden() {
-      if (document.visibilityState !== "hidden" || !challenge || paused) {
-        return;
-      }
-
-      if (!feedback) {
-        const elapsedMs = performance.now() - segmentStartedAt.current;
-        setRemainingMs(
-          Math.max(0, segmentRemainingMs.current - elapsedMs),
-        );
-      }
-      setPaused(true);
-    }
-
-    document.addEventListener("visibilitychange", pauseWhenHidden);
-    return () => {
-      document.removeEventListener("visibilitychange", pauseWhenHidden);
-    };
-  }, [challenge, feedback, paused]);
+  }, [challenge, feedback, reportingIssue]);
 
   async function startChallenge() {
     setLoading(true);
@@ -258,7 +232,6 @@ export function App({
       setChallengeResults([]);
       setReviewCopyState(null);
       setFeedback(null);
-      setPaused(document.visibilityState === "hidden");
       setReportingIssue(false);
       setReportStatus(null);
       setManualReport(null);
@@ -273,25 +246,6 @@ export function App({
 
   if (challenge) {
     const currentChallenge = challenge;
-    if (paused) {
-      return (
-        <main className="app-shell centered-panel">
-          <div className="card pause-card">
-            <p className="eyebrow">知识挑战</p>
-            <h1>挑战已暂停</h1>
-            <p>准备好后继续，剩余时间不会在后台减少。</p>
-          </div>
-          <button
-            className="primary-button"
-            type="button"
-            onClick={() => setPaused(false)}
-          >
-            继续挑战
-          </button>
-        </main>
-      );
-    }
-
     if (questionIndex === currentChallenge.questions.length) {
       async function copyReviewPrompt(question: ChallengeQuestion) {
         try {
@@ -496,7 +450,7 @@ export function App({
 
       const currentRemainingMs = Math.max(
         0,
-        segmentRemainingMs.current -
+        questionDurationMs -
           (performance.now() - segmentStartedAt.current),
       );
       const elapsedMs = questionDurationMs - currentRemainingMs;
