@@ -17,10 +17,10 @@ let sourceChallenge: PreparedChallenge;
 
 beforeAll(async () => {
   const questions = await loadQuestionBank(
-    "public/data/knowledge-35000-v1",
+    "public/data/knowledge-35000-v2",
   );
   sourceChallenge = {
-    bankVersion: "knowledge-35000-v1",
+    bankVersion: "knowledge-35000-v2",
     questions: mainCategories.map((category) => {
       const question = questions.find(
         ({ categoryId }) => categoryId === category.categoryId,
@@ -298,7 +298,7 @@ describe("knowledge challenge", () => {
       expect.stringContaining(`题目标识：${questionAt(0).questionId}`),
     );
     expect(copyText).toHaveBeenCalledWith(
-      expect.stringContaining("题库版本：knowledge-35000-v1"),
+      expect.stringContaining("题库版本：knowledge-35000-v2"),
     );
     expect(screen.getByText("问题信息已复制")).toBeVisible();
     expect(screen.getByRole("button", { name: "继续挑战" })).toHaveClass(

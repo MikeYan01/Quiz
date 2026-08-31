@@ -10,7 +10,7 @@ test.beforeEach(async ({ page }) => {
 
 test.beforeAll(async () => {
   const questions = await loadQuestionBank(
-    "public/data/knowledge-35000-v1",
+    "public/data/knowledge-35000-v2",
   );
   answersByPrompt = new Map(
     questions.map((question) => {

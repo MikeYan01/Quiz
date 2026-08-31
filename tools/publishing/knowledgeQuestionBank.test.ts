@@ -7,7 +7,7 @@ import { questionBankManifestSchema } from "../../src/data/schema";
 import { mainCategoryIds } from "../../src/domain/categories";
 import { loadQuestionBank } from "./loadQuestionBank";
 
-const bankDirectory = "public/data/knowledge-35000-v1";
+const bankDirectory = "public/data/knowledge-35000-v2";
 
 describe("knowledge question bank", () => {
   it("is the single complete 35000-question source", async () => {
@@ -34,6 +34,17 @@ describe("knowledge question bank", () => {
       expect(
         questions.filter((question) => question.categoryId === categoryId),
       ).toHaveLength(3_500);
+    }
+    for (const removedQuestionId of [
+      "question-567d03c67f261437",
+      "q20k-ll-c-0115",
+      "q50k-lh-b-0143",
+    ]) {
+      expect(
+        questions.some(
+          ({ questionId }) => questionId === removedQuestionId,
+        ),
+      ).toBe(false);
     }
   });
 

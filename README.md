@@ -22,7 +22,7 @@ npm run build
 npm run preview
 ```
 
-Development and production builds read `public/data/knowledge-35000-v1/` directly.
+Development and production builds read `public/data/knowledge-35000-v2/` directly.
 
 Every push to `main` is typechecked, tested, built, and deployed to GitHub
 Pages by `.github/workflows/deploy.yml`. GitHub Pages serves this project under
@@ -40,6 +40,6 @@ npm run check:all
 
 ## Question-bank workflow
 
-[`public/data/knowledge-35000-v1/`](public/data/knowledge-35000-v1/) is the only persistent question source. The app and tests read its manifest and shards directly; no editable JSONL or development-bank copy is retained.
+[`public/data/knowledge-35000-v2/`](public/data/knowledge-35000-v2/) is the only persistent question source. The app and tests read its manifest and shards directly; no editable JSONL or development-bank copy is retained.
 
 See the [product specification](docs/product-spec.md#数据模型与静态发布) for the format and future expansion rule.
