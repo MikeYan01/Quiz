@@ -10,7 +10,7 @@ import "./index.css";
 
 const prepareChallenge = createStaticChallengePreparer({
   source: createHttpQuestionBankSource(
-    new URL("./data/knowledge-35000-v2/", document.baseURI),
+    new URL("./data/knowledge-35000-v3/", document.baseURI),
   ),
   manifestPath: "manifest.json",
 });

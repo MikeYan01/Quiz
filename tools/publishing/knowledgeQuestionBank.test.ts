@@ -7,7 +7,7 @@ import { questionBankManifestSchema } from "../../src/data/schema";
 import { mainCategoryIds } from "../../src/domain/categories";
 import { loadQuestionBank } from "./loadQuestionBank";
 
-const bankDirectory = "public/data/knowledge-35000-v2";
+const bankDirectory = "public/data/knowledge-35000-v3";
 
 describe("knowledge question bank", () => {
   it("is the single complete 35000-question source", async () => {
@@ -39,6 +39,16 @@ describe("knowledge question bank", () => {
       "question-567d03c67f261437",
       "q20k-ll-c-0115",
       "q50k-lh-b-0143",
+      "q20k-ns-a-0335",
+      "question-967e5c0054b54a67",
+      "q20k-hi-b-0068",
+      "q20k-ge-a-0080",
+      "q20k-ll-c-0499",
+      "q20k-ac-a-0488",
+      "question-6d5fd27a6b15c257",
+      "q20k-si-a-0059",
+      "q50k-sp-a-0480",
+      "q20k-lh-c-0421",
     ]) {
       expect(
         questions.some(

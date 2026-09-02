@@ -123,7 +123,7 @@ describe("question bank contracts", () => {
 
   it("rejects HTML markup in otherwise plain question content", async () => {
     const [question] = await loadQuestionBank(
-      "public/data/knowledge-35000-v2",
+      "public/data/knowledge-35000-v3",
     );
     if (!question) {
       throw new Error("The question bank is empty.");
