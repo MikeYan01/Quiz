@@ -50,6 +50,25 @@ function outcomeLabel(outcome: Feedback["outcome"]) {
   return "超时";
 }
 
+function BrandMark() {
+  return (
+    <svg className="brand-mark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+      <path d="M24 5 43 24 24 43 5 24Z" />
+      <path d="m24 14 10 10-10 10-10-10Z" />
+      <path d="M24 5v9m19 10h-9M24 43v-9M5 24h9" />
+      <circle cx="24" cy="24" r="2" />
+    </svg>
+  );
+}
+
+function ArrowIcon() {
+  return (
+    <svg className="arrow-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 12h14m-6-6 6 6-6 6" />
+    </svg>
+  );
+}
+
 interface ChallengeHeaderProps {
   question: ChallengeQuestion;
   questionIndex: number;
@@ -64,10 +83,24 @@ function ChallengeHeader({
   return (
     <header className="challenge-header">
       <span className="category-badge">{question.categoryLabel}</span>
-      <span>
+      <span className="question-position">
         第 {questionIndex + 1} / {questionsPerChallenge} 题
       </span>
       {status}
+      <div className="challenge-progress" aria-hidden="true">
+        {Array.from({ length: questionsPerChallenge }, (_, index) => (
+          <span
+            key={index}
+            className={
+              index < questionIndex
+                ? "progress-complete"
+                : index === questionIndex
+                  ? "progress-current"
+                  : undefined
+            }
+          />
+        ))}
+      </div>
     </header>
   );
 }
@@ -89,7 +122,7 @@ function QuestionCard({
     <section className="card question-card" aria-live={feedback ? "polite" : "off"}>
       <h1>{question.prompt}</h1>
       <div className="options" aria-label="选项">
-        {question.options.map((option) => {
+        {question.options.map((option, index) => {
           const isCorrect =
             feedback !== null &&
             option.optionId === question.correctOptionId;
@@ -113,15 +146,18 @@ function QuestionCard({
                 onSelect ? () => onSelect(option.optionId) : undefined
               }
             >
-              <span>{option.text}</span>
-              {marker ? (
-                <span className="option-marker">{marker}</span>
-              ) : null}
+              <span className="option-letter" aria-hidden="true">
+                {String.fromCharCode(65 + index)}
+              </span>
+              <span className="option-text">{option.text}</span>
+              <span className="option-marker" aria-hidden="true">
+                {marker}
+              </span>
             </button>
           );
         })}
       </div>
-      {children}
+      <div className="question-footer">{children}</div>
     </section>
   );
 }
@@ -268,10 +304,28 @@ export function App({
       return (
         <main className="app-shell results-shell">
           <div className="card result-card">
-            <p className="final-score">挑战得分：{totalScore}</p>
+            <div className="result-summary">
+              <BrandMark />
+              <p className="final-score">
+                <span>挑战得分：</span>
+                <strong>{totalScore}</strong>
+              </p>
+            </div>
+            <button
+              className="primary-button"
+              type="button"
+              disabled={loading}
+              onClick={startChallenge}
+            >
+              {loading ? "正在准备..." : "再来一局"}
+              <ArrowIcon />
+            </button>
           </div>
           <section className="challenge-review">
-            <h1>挑战复盘</h1>
+            <div className="review-heading">
+              <h1>挑战复盘</h1>
+              <span aria-hidden="true">回顾 · 再发现</span>
+            </div>
             <div className="challenge-review-list">
               {currentChallenge.questions.map((reviewQuestion, index) => {
                 const result = challengeResults[index];
@@ -337,14 +391,6 @@ export function App({
               })}
             </div>
           </section>
-          <button
-            className="primary-button"
-            type="button"
-            disabled={loading}
-            onClick={startChallenge}
-          >
-            {loading ? "正在准备..." : "再来一局"}
-          </button>
         </main>
       );
     }
@@ -385,13 +431,16 @@ export function App({
 
     if (feedback) {
       return (
-        <main className="app-shell">
+        <main className="app-shell play-shell">
           <ChallengeHeader
             question={currentQuestion}
             questionIndex={questionIndex}
-            status={<span aria-hidden="true" />}
+            status={
+              <span className="timer timer-idle" aria-hidden="true">—</span>
+            }
           />
           <QuestionCard
+            key={currentQuestion.questionId}
             question={currentQuestion}
             feedback={feedback}
             onSelect={null}
@@ -411,29 +460,29 @@ export function App({
                 </button>
               ) : null}
             </div>
-          {reportingIssue ? (
-            <div className="report-panel">
-              {reportStatus ? <p role="status">{reportStatus}</p> : null}
-              {manualReport ? (
-                <textarea
-                  aria-label="问题信息"
-                  readOnly
-                  value={manualReport}
-                />
-              ) : null}
-              <button
-                className="compact-button"
-                type="button"
-                onClick={() => {
-                  setReportingIssue(false);
-                  setReportStatus(null);
-                  setManualReport(null);
-                }}
-              >
-                继续挑战
-              </button>
-            </div>
-          ) : null}
+            {reportingIssue ? (
+              <div className="report-panel">
+                {reportStatus ? <p role="status">{reportStatus}</p> : null}
+                {manualReport ? (
+                  <textarea
+                    aria-label="问题信息"
+                    readOnly
+                    value={manualReport}
+                  />
+                ) : null}
+                <button
+                  className="compact-button"
+                  type="button"
+                  onClick={() => {
+                    setReportingIssue(false);
+                    setReportStatus(null);
+                    setManualReport(null);
+                  }}
+                >
+                  继续挑战
+                </button>
+              </div>
+            ) : null}
           </QuestionCard>
         </main>
       );
@@ -470,7 +519,7 @@ export function App({
     }
 
     return (
-      <main className="app-shell">
+      <main className="app-shell play-shell">
         <ChallengeHeader
           question={question}
           questionIndex={questionIndex}
@@ -488,6 +537,7 @@ export function App({
           }
         />
         <QuestionCard
+          key={question.questionId}
           question={question}
           feedback={null}
           onSelect={submitAnswer}
@@ -498,14 +548,23 @@ export function App({
 
   return (
     <main className="app-shell centered-panel">
+      <div className="brand-emblem">
+        <BrandMark />
+      </div>
       <h1 className="brand-title">知识挑战</h1>
       <button
         className="primary-button"
         type="button"
         disabled={loading}
+        aria-busy={loading}
         onClick={startChallenge}
       >
         {loading ? "正在准备..." : "开始挑战"}
+        {loading ? (
+          <span className="loading-spinner" aria-hidden="true" />
+        ) : (
+          <ArrowIcon />
+        )}
       </button>
       {error ? <p role="alert">{error}</p> : null}
     </main>

@@ -348,7 +348,9 @@ describe("knowledge challenge", () => {
       });
     }
 
-    expect(screen.getByText("挑战得分：90")).toBeVisible();
+    expect(screen.getByText("挑战得分：").parentElement).toHaveTextContent(
+      "挑战得分：90",
+    );
     expect(screen.getByRole("heading", { name: "挑战复盘" })).toBeVisible();
     const reviewedQuestions = screen.getAllByRole("article");
     expect(reviewedQuestions).toHaveLength(10);
